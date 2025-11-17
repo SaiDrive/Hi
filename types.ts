@@ -1,4 +1,3 @@
-
 export enum ContentType {
   TEXT = 'text',
   IMAGE = 'image',
@@ -24,7 +23,7 @@ export enum Page {
 export interface ContentItem {
   id: string;
   type: ContentType;
-  data: string; // GCS URL for all content types
+  data: string; // Public URL for all content types
   prompt: string;
   status: ContentStatus;
   schedule?: string; // ISO string for date/time
@@ -34,7 +33,7 @@ export interface ContentItem {
 export interface UserImage {
   id: string;
   name: string;
-  url: string; // GCS URL for the uploaded image
+  url: string; // Public URL for the uploaded image
 }
 
 export interface User {
@@ -43,15 +42,8 @@ export interface User {
   email: string;
 }
 
-// Fix: Make the 'aistudio' property on the Window interface optional.
-// This resolves the "All declarations of 'aistudio' must have identical modifiers" error,
-// as its existence is checked conditionally in the application code.
 declare global {
-  interface AIStudio {
-    hasSelectedApiKey: () => Promise<boolean>;
-    openSelectKey: () => Promise<void>;
-  }
   interface Window {
-    aistudio?: AIStudio;
+    google?: any;
   }
 }

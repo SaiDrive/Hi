@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Page, type User } from './types';
 import * as authService from './services/authService';
@@ -7,20 +6,30 @@ import HomePage from './components/pages/HomePage';
 import GeneratorPage from './components/pages/GeneratorPage';
 import LibraryPage from './components/pages/LibraryPage';
 import Navbar from './components/Navbar';
+import Spinner from './components/Spinner';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>(Page.HOME);
-  
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    const user = authService.getCurrentUser();
-    if (user) {
-      setCurrentUser(user);
-    }
+    const checkSession = async () => {
+      try {
+        const user = await authService.getCurrentUser();
+        if (user) {
+          setCurrentUser(user);
+        }
+      } catch (error) {
+        console.error("Session check failed", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkSession();
   }, []);
 
-  const handleLogin = () => {
-    const user = authService.login();
+  const handleLogin = (user: User) => {
     setCurrentUser(user);
     setCurrentPage(Page.HOME);
   };
@@ -29,6 +38,14 @@ const App: React.FC = () => {
     authService.logout();
     setCurrentUser(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
+        <Spinner className="w-12 h-12" />
+      </div>
+    );
+  }
 
   const renderPage = () => {
     if (!currentUser) return null;
@@ -50,7 +67,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white font-sans flex flex-col">
+    <div className="min-h-screen bg-zinc-900 text-zinc-200 font-sans flex flex-col">
       <Navbar
         currentPage={currentPage}
         onNavigate={setCurrentPage}

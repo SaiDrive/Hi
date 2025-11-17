@@ -1,35 +1,57 @@
-
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import * as authService from '../../services/authService';
+import type { User } from '../../types';
 
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: (user: User) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+  const googleButtonRef = useRef<HTMLDivElement>(null);
+
+  const handleCredentialResponse = async (response: any) => {
+    try {
+      const user = await authService.login(response.credential);
+      onLogin(user);
+    } catch (error) {
+      console.error("Login Failed:", error);
+      // You could show an error message to the user here
+    }
+  };
+
+  useEffect(() => {
+    if (window.google && googleButtonRef.current) {
+      window.google.accounts.id.initialize({
+        // ===================================================================
+        // TODO: PASTE YOUR GOOGLE CLIENT ID HERE
+        // You can get this from the Google Cloud Console under APIs & Services > Credentials.
+        // It should look like '12345-abcde.apps.googleusercontent.com'
+        // ===================================================================
+        client_id: '1039670019942-4fnpud95ijvaghpou1blets9nm79bf8h.apps.googleusercontent.com',
+        callback: handleCredentialResponse,
+        use_fedcm_for_prompt: false, // Prevents FedCM NotAllowedError
+      });
+      window.google.accounts.id.renderButton(
+        googleButtonRef.current,
+        { theme: 'outline', size: 'large', type: 'standard', shape: 'rectangular', text: 'signin_with', logo_alignment: 'left' }
+      );
+      window.google.accounts.id.prompt(); // Also display the One Tap dialog
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-zinc-900 text-white flex flex-col items-center justify-center p-4">
       <div className="text-center">
-        <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500 mb-4">
+        <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-500 mb-4">
           Brand Ambassador AI
         </h1>
-        <p className="text-slate-300 max-w-xl mx-auto mb-8">
+        <p className="text-zinc-300 max-w-xl mx-auto mb-8">
           Your personal AI for generating, scheduling, and posting social media content.
           Log in to get started.
         </p>
       </div>
-      <div className="bg-slate-800 p-8 rounded-lg shadow-xl">
-        <button
-          onClick={onLogin}
-          className="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-slate-900 bg-white hover:bg-slate-200"
-        >
-          <svg className="w-6 h-6 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-            <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
-            <path fill="#FF3D00" d="M6.306 14.691c-1.229 2.222-1.994 4.79-1.994 7.618s.765 5.396 1.994 7.618l-5.657 5.657C.253 32.544 0 28.484 0 24s.253-8.544 2.649-11.969l5.657 2.66z" />
-            <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-5.657-5.657C30.046 35.043 27.268 36 24 36c-5.223 0-9.657-3.343-11.303-7.917l-5.657 5.657C9.306 39.023 16.135 44 24 44z" />
-            <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l5.657 5.657C42.848 35.817 44 30.134 44 24c0-1.341-.138-2.65-.389-3.917z" />
-          </svg>
-          Sign in with Google
-        </button>
+      <div className="bg-zinc-800 p-8 rounded-lg shadow-xl">
+        <div ref={googleButtonRef} />
       </div>
     </div>
   );
