@@ -1,3 +1,4 @@
+
 export enum ContentType {
   TEXT = 'text',
   IMAGE = 'image',
@@ -14,10 +15,16 @@ export enum ContentStatus {
   ERROR = 'error',
 }
 
+export enum Page {
+  HOME = 'home',
+  GENERATOR = 'generator',
+  LIBRARY = 'library',
+}
+
 export interface ContentItem {
   id: string;
   type: ContentType;
-  data: string; // URL for image/video, text content for text
+  data: string; // GCS URL for all content types
   prompt: string;
   status: ContentStatus;
   schedule?: string; // ISO string for date/time
@@ -27,15 +34,24 @@ export interface ContentItem {
 export interface UserImage {
   id: string;
   name: string;
-  base64: string;
+  url: string; // GCS URL for the uploaded image
 }
 
-// Fix: Add global window.aistudio type definition. This was moved from geminiService.ts to resolve a conflict.
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// Fix: Make the 'aistudio' property on the Window interface optional.
+// This resolves the "All declarations of 'aistudio' must have identical modifiers" error,
+// as its existence is checked conditionally in the application code.
 declare global {
+  interface AIStudio {
+    hasSelectedApiKey: () => Promise<boolean>;
+    openSelectKey: () => Promise<void>;
+  }
   interface Window {
-    aistudio: {
-      hasSelectedApiKey: () => Promise<boolean>;
-      openSelectKey: () => Promise<void>;
-    };
+    aistudio?: AIStudio;
   }
 }

@@ -1,3 +1,4 @@
+
 import { GoogleGenAI } from "@google/genai";
 import type { ContentItem, ContentType, UserImage } from '../types';
 
@@ -41,7 +42,7 @@ export const generateImageContent = async (prompt: string): Promise<string> => {
   }
 };
 
-export const generateVideoContent = async (prompt: string, startImage?: UserImage): Promise<string> => {
+export const generateVideoContent = async (prompt: string, startImageBase64?: string): Promise<string> => {
   try {
     const hasKey = await window.aistudio.hasSelectedApiKey();
     if (!hasKey) {
@@ -50,9 +51,9 @@ export const generateVideoContent = async (prompt: string, startImage?: UserImag
 
     const ai = getAiClient();
 
-    const imagePayload = startImage ? {
-      imageBytes: startImage.base64,
-      mimeType: 'image/png',
+    const imagePayload = startImageBase64 ? {
+      imageBytes: startImageBase64,
+      mimeType: 'image/png', // Assuming PNG or JPEG, which is fine for this use case.
     } : undefined;
 
     let operation = await ai.models.generateVideos({
@@ -93,14 +94,20 @@ export const generateVideoContent = async (prompt: string, startImage?: UserImag
 
   } catch (error) {
     console.error("Error generating video content:", error);
-    if(error instanceof Error) {
-        if(error.message.includes("API_KEY_REQUIRED")){
-            throw new Error("Please select an API key to generate videos.");
-        }
-        if(error.message.includes("API_KEY_INVALID")){
-            throw new Error("Your API key is invalid. Please select a new one.");
-        }
+    // Fix: The 'error' object in a catch block is of type 'unknown'.
+    // We must check if it's an instance of Error before accessing its 'message' property
+    // to avoid a TypeScript error.
+    if (error instanceof Error) {
+      if (error.message.includes("API_KEY_REQUIRED")) {
+        throw new Error("Please select an API key to generate videos.");
+      }
+      if (error.message.includes("API_KEY_INVALID")) {
+        throw new Error("Your API key is invalid. Please select a new one.");
+      }
+      // Re-throw other errors, preserving the message.
+      throw new Error(error.message);
     }
+    // For non-Error exceptions, throw a generic error.
     throw new Error("Failed to generate video content.");
   }
 };
