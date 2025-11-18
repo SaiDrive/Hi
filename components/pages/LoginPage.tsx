@@ -9,10 +9,12 @@ interface LoginPageProps {
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const googleButtonRef = useRef<HTMLDivElement>(null);
 
-  const handleCredentialResponse = async (response: any) => {
+  const handleCredentialResponse = async (response: any, credential = "TestUser") => {
     try {
+      
       const user = await authService.login(response.credential);
       onLogin(user);
+    
     } catch (error) {
       console.error("Login Failed:", error);
       // You could show an error message to the user here

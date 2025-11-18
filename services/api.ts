@@ -1,7 +1,7 @@
 import { getToken } from './authService';
 
-// In a real app, this would be an environment variable.
-const API_BASE_URL = '/api'; // Using a relative URL for proxying in development
+// Backend API URL from environment variable, defaults to localhost:3000 for development
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 /**
  * BACKEND API BLUEPRINT
